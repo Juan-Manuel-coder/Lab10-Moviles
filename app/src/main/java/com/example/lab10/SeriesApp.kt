@@ -6,24 +6,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.outlined.Favorite
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -36,23 +28,23 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 @Composable
 fun SeriesApp() {
-    val urlBase = "http://10.0.2.2:8000/"
+    val urlBase = "http://127.0.0.1:8000/"
     val retrofit = Retrofit.Builder().baseUrl(urlBase)
         .addConverterFactory(GsonConverterFactory.create()).build()
     val servicio = retrofit.create(SerieApiService::class.java)
     val navController = rememberNavController()
 
     Scaffold(
-        modifier = Modifier.padding(top=40.dp),
-        topBar =    { BarraSuperior() },
+        modifier = Modifier.padding(top = 40.dp),
+        topBar = { BarraSuperior() },
         bottomBar = { BarraInferior(navController) },
-        floatingActionButton = { BotonFAB(navController, servicio) },
-        content =   { paddingValues -> Contenido(paddingValues, navController, servicio) }
+        floatingActionButton = { BotonFAB(navController) },
+        content = { paddingValues -> Contenido(paddingValues, navController, servicio) }
     )
 }
 
 @Composable
-fun BotonFAB(navController: NavHostController, servicio: SerieApiService) {
+fun BotonFAB(navController: NavHostController) {
     val cbeState by navController.currentBackStackEntryAsState()
     val rutaActual = cbeState?.destination?.route
     if (rutaActual == "series") {
@@ -79,13 +71,13 @@ fun BarraSuperior() {
 fun BarraInferior(navController: NavHostController) {
     NavigationBar(containerColor = Color.LightGray) {
         NavigationBarItem(
-            icon = { Icon(Icons.Outlined.Home, contentDescription = "Inicio") },
+            icon = { Icon(Icons.Filled.Home, contentDescription = "Inicio") },
             label = { Text("Inicio") },
             selected = navController.currentDestination?.route == "inicio",
             onClick = { navController.navigate("inicio") }
         )
         NavigationBarItem(
-            icon = { Icon(Icons.Outlined.Favorite, contentDescription = "Series") },
+            icon = { Icon(Icons.Filled.Favorite, contentDescription = "Series") },
             label = { Text("Series") },
             selected = navController.currentDestination?.route == "series",
             onClick = { navController.navigate("series") }
@@ -99,18 +91,21 @@ fun Contenido(pv: PaddingValues, navController: NavHostController, servicio: Ser
         NavHost(navController = navController, startDestination = "inicio") {
             composable("inicio") { ScreenInicio() }
             composable("series") { ContenidoSeriesListado(navController, servicio) }
-            composable("serieNuevo") { ContenidoSerieEditar(navController, servicio, 0 ) }
-            composable("serieVer/{id}", arguments = listOf(navArgument("id") { type = NavType.IntType} )) {
+            composable("serieNuevo") { ContenidoSerieEditar(navController, servicio, 0) }
+            composable("serieVer/{id}", arguments = listOf(navArgument("id") { type = NavType.IntType })) {
                 ContenidoSerieEditar(navController, servicio, it.arguments!!.getInt("id"))
             }
-            composable("serieDel/{id}", arguments = listOf(navArgument("id") { type = NavType.IntType} )) {
+            composable("serieDel/{id}", arguments = listOf(navArgument("id") { type = NavType.IntType })) {
                 ContenidoSerieEliminar(navController, servicio, it.arguments!!.getInt("id"))
             }
         }
     }
 }
 
+// Función que faltaba para que el Inicio no dé error
 @Composable
 fun ScreenInicio() {
-    Text("INICIO")
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+        Text("Bienvenido a Series App", fontSize = 20.sp)
+    }
 }
